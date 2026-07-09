@@ -1,90 +1,124 @@
-# Claude Secure Template
+# On-Prem Dev Platform
 
-[![ci](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/ci.yml)
-[![semgrep](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/semgrep.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/semgrep.yml)
-[![secret-scan](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/secret-scan.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/secret-scan.yml)
+[![ci](https://github.com/Moon-Knight13/homelab_infra/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/homelab_infra/actions/workflows/ci.yml)
+[![semgrep](https://github.com/Moon-Knight13/homelab_infra/actions/workflows/semgrep.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/homelab_infra/actions/workflows/semgrep.yml)
+[![secret-scan](https://github.com/Moon-Knight13/homelab_infra/actions/workflows/secret-scan.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/homelab_infra/actions/workflows/secret-scan.yml)
 
-A language-agnostic, production-ready template for Claude-first development. Provides secure defaults, AI task routing, BMAD workflow integration, and deterministic CI gates so you can focus on your project rather than its scaffolding.
+A reusable, infrastructure-as-code **pattern** for a small, secure datacentre — headless
+Proxmox virtualisation behind a policy-as-code pfSense firewall, hardened to CIS benchmarks
+and evidenced against UK Secure by Design as it is built. Not one homelab: a pattern any
+equivalent lab stands up by swapping a single inventory file, tears down and *rerolls* from
+source in under four hours, and hands over to a stranger without loss.
 
-## What's Included
+This is the **public pattern repository** — roles, playbooks, templates, and documentation
+with no deployment specifics. Deployment data, secrets, and generated compliance evidence
+live in separate **private** repositories by design.
 
-- **AI routing** — routes low-risk work to a local Ollama model; escalates to Claude for security, architecture, and cross-cutting changes
-- **Security gates** — gitleaks secret scanning, semgrep SAST (including MITRE ATLAS AI/ML rules), Trivy container scanning, all enforced in CI
-- **BMAD workflow** — structured product → engineering planning via the `/bmad` skill
-- **Kanban orchestration** — a per-repo GitHub Project board where a human orchestrator hands work to Claude sessions or local models; agents claim issues collision-free via `/next-issue` and `/run-epic` (see [docs/KANBAN_WORKFLOW.md](docs/KANBAN_WORKFLOW.md))
-- **Devcontainer** — deny-by-default network firewall, pre-installed tooling, Claude CLI with mounted auth volume
-- **Branch protection bootstrap** — one-command GitHub branch protection with required status checks
-- **Day-0 validation** — `/day0-check` walks you through every setup step with pass/fail output and remediation hints
+## 📊 Briefings
 
-## How it works
+Two self-contained, theme-aware pages (technical **and** non-technical readers). Served via
+GitHub Pages, or open the HTML locally — no external requests.
 
-Work comes in as a board card, gets **routed** by risk — to a human, to Claude, or to a
-cheaper local model — and every change runs the same security gates before it merges. The
-whole loop runs inside a devcontainer whose network is deny-by-default.
+| Page | What it covers |
+|------|----------------|
+| **[On-Prem Dev Platform — what &amp; how](docs/explainer/platform.html)** | The project: mission, who it serves, the 21 capabilities, the tech stack, measurable promises, the layered architecture, the rebuild story, and the security model. Start here. |
+| **[Engineering workflow overview](docs/explainer/index.html)** | The Claude-first delivery workflow this project is *built with* — AI task routing, security gates, and token compression. |
 
-📊 **[Open the visual overview →](https://moon-knight13.github.io/claude_template_repo/)** —
-a one-page briefing (for technical and non-technical readers) covering the devcontainer, the
-two engines, caveman token compression, and the CI gates. Served from
-[`docs/explainer/`](docs/explainer/index.html) via GitHub Pages; the page is self-contained,
-so you can also open the HTML locally.
+_Once GitHub Pages is enabled (Settings → Pages → Source: "GitHub Actions"), these publish
+automatically at `https://moon-knight13.github.io/homelab_infra/platform.html` and
+`.../index.html`._
 
-- **Routing** derives from `scripts/route-model.sh`; the same Human/Claude/Local decision
-  shows up as the **Route** field on each board card.
-- **Gates are required, not advisory** — a red check blocks the merge (see
-  [`.github/workflows/`](.github/workflows/)).
-- **Caveman** trims Claude's prose to cut output tokens and surfaces a live per-session
-  token/cost tally in the statusline (see [docs/TEMPLATE_GUIDE.md](docs/TEMPLATE_GUIDE.md)).
+## What the platform does
 
-## Prerequisites
+Twenty-one capabilities, grouped by the job they do — each with a concrete, testable success
+signal:
 
-- Docker + VS Code Dev Containers extension
-- Git with SSH access to GitHub
-- Claude Code CLI (authenticated before first session)
-- Optional: Ollama on host port 11434 for local model offload
+- **Provision &amp; virtualise** — bare machines boot and install themselves over the network,
+  unattended; everything runs inside a validated virtualisation layer.
+- **Network as policy** — the firewall is code; the network is split into isolated zones that
+  deny each other by default, every rule generated from one policy source.
+- **Harden &amp; prove** — CIS hardening gates every merge and is re-scanned for drift; the
+  security case is assured against UK Secure by Design with named risk owners.
+- **Identity &amp; access** — mandatory MFA for admin access; a recorded-approval → review →
+  provable-offboarding lifecycle.
+- **Deliver services safely** — every service onboards through a readiness checklist; images
+  are scanned and deployed by digest via outbound pull only; intrusion detection survives
+  failover.
+- **Operate &amp; survive** — automated gates on every change, fast-rebuild backups, air-gap
+  promotion bundles, queryable live state, and cold-handover documentation drills.
 
-See [docs/TEMPLATE_GUIDE.md](docs/TEMPLATE_GUIDE.md) for the full setup guide including Caveman token compression and PII-Shield.
+See the [platform briefing](docs/explainer/platform.html) for the full picture, or the
+[architecture &amp; capability detail](#planning--architecture) below.
 
-## Quick Start
+## Guarantees
 
-1. **Use this template** — click "Use this template" on GitHub, or clone and re-init:
-   ```bash
-   git clone <this-repo> my-project && cd my-project && rm -rf .git && git init
-   ```
+Measured, not asserted — the twelve-month success criteria:
 
-2. **Open in devcontainer** — VS Code prompts to reopen; accept. The container installs all tooling automatically on start.
+- **≤ 4 hours** bare-metal to healthy, including critical-service data restore
+- **≤ 1 day** to onboard a new service (**≤ 30 min** operator effort)
+- **CIS Level 2** on the hypervisor host — or formal, signed-off waivers
+- **Zero leaks** in this public repository, by layered scanning and human review
+- Stood up at least once on **non-reference hardware** by inventory swap alone
 
-3. **Complete day-0 setup** — two browser logins; everything else is applied automatically on container start:
-   ```bash
-   gh auth login --hostname github.com --git-protocol https --web -s project && gh auth setup-git
-   claude auth login
-   bash scripts/setup-day0.sh   # finishes the auth-gated bootstraps, prints status
-   ```
-   Verify anytime with `bash scripts/check-day0.sh` — or from Claude: `/day0-check`
+## How it's engineered
 
-4. **Validate the template** — confirm all template integrity checks pass:
-   ```bash
-   bash scripts/validate-template.sh
-   ```
+This project is built on the **[Claude Secure Template](https://github.com/Moon-Knight13/claude_template_repo)**
+(`claude_template_repo`) — a language-agnostic, Claude-first development template providing
+the delivery discipline this platform is held to:
 
-## Repository Structure
+- **AI task routing** — low-risk work runs on a local model; security, architecture, and
+  cross-cutting changes escalate to Claude ([docs/AI_ROUTING_POLICY.md](docs/AI_ROUTING_POLICY.md)).
+- **Deterministic security gates** — gitleaks secret scanning, semgrep SAST (incl. MITRE
+  ATLAS rules), and Trivy container scanning, all **required** in CI — a red check blocks the
+  merge ([`.github/workflows/`](.github/workflows/)).
+- **BMAD planning workflow** — structured product → architecture → epics planning
+  ([docs/BMAD_WORKFLOW.md](docs/BMAD_WORKFLOW.md)).
+- **Kanban orchestration** — a per-repo board routes each card to a human, Claude, or a local
+  model ([docs/KANBAN_WORKFLOW.md](docs/KANBAN_WORKFLOW.md)).
+- **Deny-by-default devcontainer** — the whole loop runs inside a container whose network is
+  locked down by default.
+
+The engineering-workflow [visual overview](docs/explainer/index.html) covers this in one page.
+
+## Planning &amp; architecture
+
+The platform is greenfield: the specification and architecture are complete and reviewed; the
+build is sequenced foundations-first (provisioning → network policy → hardening → services).
+
+Planning artifacts — the full specification (21 capabilities, constraints, non-goals), the
+architecture spine, and the decision log — are maintained in a **private planning repository**
+and are not reproduced here. The briefings above are the public, pattern-level reading of that
+work.
+
+## Repository structure
 
 ```
-.claude/commands/    Claude Code skills (/bmad, /bmad-to-board, /next-issue, /run-epic, /day0-check, /route-task, /security-audit, /firewall-allow)
+.claude/commands/    Claude Code skills (/bmad, /next-issue, /run-epic, /day0-check, /route-task, …)
 .devcontainer/       Dev environment with deny-by-default firewall and pre-installed tooling
-.github/             Workflows (CI, secret scan, semgrep, container scan, weekly audit); issue & PR templates
-docs/                TEMPLATE_GUIDE.md, AI_ROUTING_POLICY.md, BMAD_WORKFLOW.md, KANBAN_WORKFLOW.md
-scripts/             Bootstrap (incl. board), routing, CI helpers, and template validator
+.github/             CI, secret scan, semgrep, container scan, weekly audit; issue & PR templates; Pages
+docs/                Briefings (docs/explainer/), routing, BMAD, and kanban workflow docs
+scripts/             Bootstrap, routing, CI helpers, and validators
 ```
 
-## Deriving a New Project
+Not in this repository, by design: deployment inventory and secrets (private overlay),
+generated compliance evidence (private evidence store), and any live addresses, hostnames, or
+identity-linking data.
 
-When you start a new project from this template:
+## Security
 
-1. Replace this `README.md` with your project README — use [`docs/README.template.md`](docs/README.template.md) as a starting point.
-2. Add `scripts/ci/lint-*.sh` and `scripts/ci/test-*.sh` for your language stack (see `scripts/ci/README.md`).
-3. Do the two day-0 logins (quick start step 3) — `scripts/setup-day0.sh` then fills CODEOWNERS, copies configs, applies branch protection, and creates the Kanban board (see [docs/KANBAN_WORKFLOW.md](docs/KANBAN_WORKFLOW.md)).
-4. Replace or remove `docs/explainer/` — it describes *this template*, not your project. If you keep a project explainer there, enable GitHub Pages to serve it (**Settings → Pages → Source: "GitHub Actions"**); the `pages` workflow publishes it on the next push. Leave Pages disabled if the page shouldn't be public.
+Public-repo hygiene is a first-class requirement, not an afterthought:
+
+- No secrets, internal addresses, or identity-linking data — enforced by layered controls:
+  automated scanners, custom deny-list patterns, code-owner review on all paths, and periodic
+  human review as the primary signal.
+- Branch protection with required status checks; conventional commits; one branch / one PR per
+  unit of work.
+- See [SECURITY.md](SECURITY.md) for the disclosure policy.
 
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+---
+
+*Engineered with the [Claude Secure Template](https://github.com/Moon-Knight13/claude_template_repo).*

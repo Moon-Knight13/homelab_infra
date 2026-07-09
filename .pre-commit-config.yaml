@@ -25,6 +25,19 @@ repos:
         args: ["--config=.gitleaks.toml"]
         pass_filenames: false
 
+  - repo: local
+    hooks:
+      # Project deny-list scanner — catches internal topology and identity-linking
+      # data (IPs, VLANs, hardware SKUs, private repo slugs, identity handles, MACs)
+      # that gitleaks/semgrep miss because they are not secrets. Scans staged files
+      # here; CI (secret-scan.yml) scans the whole working tree.
+      - id: leak-scan
+        name: deny-list leak scan (public-repo hygiene)
+        entry: scripts/leak-scan.sh
+        language: script
+        pass_filenames: true
+        require_serial: true
+
   - repo: https://github.com/returntocorp/semgrep
     rev: v1.83.0
     hooks:

@@ -19,16 +19,18 @@ This template uses BMAD as the default project workflow for Claude-led delivery.
 
 BMAD outputs (`_bmad-output/`: specs, PRDs, append-only `.memlog.md` decision logs,
 absorbed plans) are **not** tracked in this public repo — memlogs are an unfiltered
-audit trail and must never be published. They live in the private repo
-`Moon-Knight13/homelab_planning`, nested inside the workspace as `_bmad-output/`
-(this repo's `.gitignore` excludes that path, so the two repos never conflict).
+audit trail and must never be published. They live in a **private BMAD planning
+repo** of your own (referred to below as `<OWNER>/<PLANNING_REPO>`), nested inside
+the workspace as `_bmad-output/` (this repo's `.gitignore` excludes that path, so the
+two repos never conflict).
 
 Restore after a fresh clone (after the devcontainer has bootstrapped BMAD):
 
 ```sh
 cd <this repo's checkout>
-gh repo clone Moon-Knight13/homelab_planning _bmad-output
-# or: git clone git@github.com:Moon-Knight13/homelab_planning.git _bmad-output
+# substitute your own private planning repo for <OWNER>/<PLANNING_REPO>
+gh repo clone <OWNER>/<PLANNING_REPO> _bmad-output
+# or: git clone git@github.com:<OWNER>/<PLANNING_REPO>.git _bmad-output
 ```
 
 BMAD skills then resume automatically — they resolve paths from

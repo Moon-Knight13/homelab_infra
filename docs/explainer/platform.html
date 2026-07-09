@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On-Prem Dev Platform — what it is &amp; how it works</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1a2333; --muted:#5a6675; --line:#dde3ea;
+    --accent:#0b5fff; --accent-soft:#e8f0ff; --good:#0a7d4f; --good-soft:#e3f5ec;
+    --warn:#9a6700; --warn-soft:#fff3d6; --zone:#f0f3f7; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f1420; --card:#171e2e; --ink:#e8edf5; --muted:#9aa7b8; --line:#2a3447;
+      --accent:#5b93ff; --accent-soft:#1b2a4a; --good:#4cc38a; --good-soft:#12301f;
+      --warn:#e2b93b; --warn-soft:#33290e; --zone:#1c2536; }
+  }
+  :root[data-theme="light"]{ --bg:#f7f8fa; --card:#ffffff; --ink:#1a2333; --muted:#5a6675; --line:#dde3ea;
+    --accent:#0b5fff; --accent-soft:#e8f0ff; --good:#0a7d4f; --good-soft:#e3f5ec; --warn:#9a6700; --warn-soft:#fff3d6; --zone:#f0f3f7; }
+  :root[data-theme="dark"]{ --bg:#0f1420; --card:#171e2e; --ink:#e8edf5; --muted:#9aa7b8; --line:#2a3447;
+    --accent:#5b93ff; --accent-soft:#1b2a4a; --good:#4cc38a; --good-soft:#12301f; --warn:#e2b93b; --warn-soft:#33290e; --zone:#1c2536; }
+  *{box-sizing:border-box; margin:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .ribbon{background:var(--card); border-bottom:1px solid var(--line); font-size:.85rem}
+  .ribbon .wrap{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:8px 20px; flex-wrap:wrap}
+  .ribbon .muted{color:var(--muted)}
+  header.hero{background:linear-gradient(135deg,var(--accent-soft),var(--bg)); border-bottom:1px solid var(--line); padding:56px 20px 40px}
+  .wrap{max-width:980px; margin:0 auto; padding:0 20px}
+  .hero .wrap{padding:0}
+  h1{font-size:2rem; line-height:1.25; margin-bottom:.5rem}
+  .tagline{font-size:1.15rem; color:var(--muted); max-width:47em}
+  .ask{display:inline-block; margin-top:18px; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:8px; padding:12px 16px; font-size:.98rem; max-width:60em}
+  nav{position:sticky; top:0; background:var(--card); border-bottom:1px solid var(--line); z-index:5; overflow-x:auto}
+  nav ul{display:flex; gap:4px; list-style:none; padding:8px 20px; max-width:980px; margin:0 auto; white-space:nowrap}
+  nav a{display:block; padding:6px 12px; border-radius:6px; color:var(--muted); font-size:.9rem}
+  nav a:hover{background:var(--accent-soft); color:var(--accent); text-decoration:none}
+  section{padding:44px 0; border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:none}
+  h2{font-size:1.45rem; margin-bottom:6px}
+  .kicker{font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:600}
+  .lead{color:var(--muted); max-width:52em; margin-bottom:22px}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  .card h3{font-size:1rem; margin-bottom:6px}
+  .card p{font-size:.92rem; color:var(--muted)}
+  .caps{display:inline-block; margin-top:10px; font-family:var(--mono); font-size:.74rem; color:var(--accent); background:var(--accent-soft); border-radius:6px; padding:2px 8px}
+  .audience{display:flex; flex-direction:column; gap:8px; margin:20px 0}
+  .aud{display:flex; align-items:baseline; gap:14px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 16px}
+  .aud .rank{font-family:var(--mono); font-size:.8rem; color:var(--accent); font-weight:700; min-width:1.6em}
+  .aud .who{font-weight:600; min-width:12em}
+  .aud .need{color:var(--muted); font-size:.9rem}
+  .layers{display:flex; flex-direction:column-reverse; gap:6px; margin:20px 0}
+  .layer{display:flex; align-items:baseline; gap:14px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 16px}
+  .layer .tag{font-family:var(--mono); font-size:.8rem; color:var(--accent); min-width:2.4em; font-weight:700}
+  .layer .name{font-weight:600; min-width:11em}
+  .layer .what{color:var(--muted); font-size:.9rem}
+  .layer-note{font-size:.85rem; color:var(--muted)}
+  .flow{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin:20px 0}
+  .step{flex:1 1 150px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; position:relative}
+  .step b{display:block; font-size:.85rem; color:var(--accent); font-family:var(--mono); margin-bottom:4px}
+  .step span{font-size:.86rem; color:var(--muted)}
+  .step.gate{border-color:var(--warn); background:var(--warn-soft)}
+  .step.gate b{color:var(--warn)}
+  .zones{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin:18px 0}
+  .zone{background:var(--zone); border:1px dashed var(--line); border-radius:8px; padding:10px 12px; font-size:.88rem}
+  .zone b{display:block; font-size:.92rem; margin-bottom:2px}
+  .zone i{color:var(--muted); font-style:normal}
+  table{width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:.92rem}
+  .tablewrap{overflow-x:auto; margin:18px 0}
+  th,td{padding:10px 14px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line)}
+  th{background:var(--zone); font-size:.85rem; letter-spacing:.03em}
+  tr:last-child td{border-bottom:none}
+  td:first-child{font-weight:600; white-space:nowrap}
+  .pill{display:inline-block; border-radius:99px; padding:2px 10px; font-size:.78rem; font-weight:600}
+  .pill.good{background:var(--good-soft); color:var(--good)}
+  .pill.warn{background:var(--warn-soft); color:var(--warn)}
+  .note{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--good); border-radius:8px; padding:12px 16px; font-size:.92rem; margin:18px 0}
+  .note.caution{border-left-color:var(--warn)}
+  .metric{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0}
+  .metric .m{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; text-align:center}
+  .metric .m b{display:block; font-size:1.5rem; color:var(--accent); font-family:var(--mono)}
+  .metric .m span{font-size:.85rem; color:var(--muted)}
+  footer{padding:36px 20px 60px; color:var(--muted); font-size:.85rem; text-align:center}
+  @media (max-width:640px){ h1{font-size:1.5rem} .layer .name,.aud .who{min-width:8em} }
+</style>
+</head>
+<body>
+
+<div class="ribbon">
+  <div class="wrap">
+    <span><strong>On-Prem Dev Platform</strong> <span class="muted">· a project built with the Claude Secure Template</span></span>
+    <span><a href="index.html">← Template overview</a></span>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>On-Prem Dev Platform</h1>
+    <p class="tagline">A reusable, code-defined blueprint for a small, secure datacentre — one that can be torn down and rebuilt from source in under four hours, proves its own security as it runs, and survives a change of hands. Not one homelab: a <em>pattern</em> any equivalent lab adopts by swapping a single inventory file.</p>
+    <p class="ask"><strong>How to read this page:</strong> the top half is the <em>what</em> — the problem, who it serves, and the promises it must keep. The lower half is the <em>how</em> — the layered shape, the rebuild story, and the security model. Written for technical and non-technical readers alike. It contains no live deployment details by design.</p>
+  </div>
+</header>
+
+<nav aria-label="Sections">
+  <ul>
+    <li><a href="#why">Why</a></li>
+    <li><a href="#who">Who it serves</a></li>
+    <li><a href="#what">What it does</a></li>
+    <li><a href="#stack">The stack</a></li>
+    <li><a href="#promises">The promises</a></li>
+    <li><a href="#shape">The shape</a></li>
+    <li><a href="#rebuild">Rebuild story</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#decisions">Key decisions</a></li>
+    <li><a href="#honest">Risks &amp; boundaries</a></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+
+<section id="why">
+  <p class="kicker">Why</p>
+  <h2>Infrastructure you can throw away</h2>
+  <p class="lead">Most home and office labs are hand-built: fragile, undocumented, and lost when the person who built them moves on. This platform inverts that. Everything — network rules, server installs, security hardening, services — is defined as code in version control. The physical hardware is disposable; the code is the asset. The discipline is chosen on greenfield, because it is cheapest to enforce before the first service lands.</p>
+  <div class="cards">
+    <div class="card"><h3>A pattern, not a build</h3><p>A reference rack proves the pattern works. Any equivalent lab stands the same pattern up by swapping inventory — different hardware, same platform — and onboards services one at a time.</p></div>
+    <div class="card"><h3>Rebuildable from source</h3><p>The whole environment can be torn down and "rerolled" from code — reproducible and idempotent. Nothing important lives only on a running machine.</p></div>
+    <div class="card"><h3>Secure by design</h3><p>Network-segmented by default, hardened to the CIS benchmark before changes can merge, multi-factor for admin access — the security floor is poured before anything stands on it.</p></div>
+    <div class="card"><h3>Evidenced as it runs</h3><p>Compliance evidence (UK Secure by Design, CIS, OWASP, MITRE ATT&amp;CK + ATLAS) is produced automatically by the pipeline — never hand-written after the fact.</p></div>
+  </div>
+</section>
+
+<section id="who">
+  <p class="kicker">Who it serves</p>
+  <h2>Built for a stack of readers, in order</h2>
+  <p class="lead">The specification names exactly who this is for, and in what priority — including the two audiences who never read code.</p>
+  <div class="audience">
+    <div class="aud"><span class="rank">1</span><span class="who">The operating sysadmin</span><span class="need">runs and rerolls the platform day to day — the primary user</span></div>
+    <div class="aud"><span class="rank">2</span><span class="who">Peer admins &amp; ITOps</span><span class="need">inherit, review, or take over — handover survivability is a tested requirement</span></div>
+    <div class="aud"><span class="rank">3</span><span class="who">Risk owners &amp; non-technical stakeholders</span><span class="need">must understand what it does and its risk position <em>without reading code</em></span></div>
+    <div class="aud"><span class="rank">4</span><span class="who">The public-repo audience</span><span class="need">reads the published pattern as evidence of professional practice</span></div>
+  </div>
+  <div class="note">Audience 3 is a capability, not an afterthought: the platform regenerates a plain-language security briefing so a non-technical reader can state what it does and where its risk sits — from that briefing alone. This page is a companion to exactly that goal.</div>
+</section>
+
+<section id="what">
+  <p class="kicker">What it does</p>
+  <h2>Twenty-one capabilities, seven jobs</h2>
+  <p class="lead">The specification locks 21 capabilities — each with a stated intent and a concrete success test. Grouped by the job they do. The tags map each group to its underlying capabilities.</p>
+  <div class="cards">
+    <div class="card"><h3>Provision &amp; virtualise</h3><p>Turn bare machines on and install them over the network, unattended — no keyboard, no console — then run everything inside a virtualisation layer with validated network profiles.<span class="caps">CAP-1 · 4 · 5 · 6</span></p></div>
+    <div class="card"><h3>Network as policy</h3><p>The firewall is code. The network splits into isolated zones that deny each other by default; only explicitly written rules allow a flow — and every rule is generated from one policy file.<span class="caps">CAP-2 · 3</span></p></div>
+    <div class="card"><h3>Harden &amp; prove</h3><p>Servers are hardened to the CIS benchmark before any change can merge, re-scanned on a schedule for drift, and assured against the UK Secure by Design framework with named risk owners.<span class="caps">CAP-7 · 10</span></p></div>
+    <div class="card"><h3>Identity &amp; access</h3><p>Multi-factor is mandatory for admin access. Rights follow a lifecycle: recorded approval, single sign-on rolled out in phases, quarterly review, offboarding that provably removes every key.<span class="caps">CAP-11 · 16</span></p></div>
+    <div class="card"><h3>Secrets &amp; crypto</h3><p>Secrets are encrypted at rest with defined ownership and leak checks; time sync, DNS validation, internal certificates and at-rest encryption form a baseline every host inherits.<span class="caps">CAP-8 · 18</span></p></div>
+    <div class="card"><h3>Deliver services safely</h3><p>Every service onboards through a readiness checklist. Container images are built, scanned, and deployed by digest from a registry the platform pulls — never an inbound push. Intrusion detection stays up even under failover.<span class="caps">CAP-12 · 15 · 13</span></p></div>
+    <div class="card"><h3>Operate &amp; survive</h3><p>Automated checks gate every change; backups target a fast rebuild; a signed export can cross an air gap; live state is queryable; a stranger can take over from the docs; and the supply chain is tracked without freezing it.<span class="caps">CAP-9 · 14 · 17 · 19 · 20 · 21</span></p></div>
+  </div>
+</section>
+
+<section id="stack">
+  <p class="kicker">The stack</p>
+  <h2>Built on proven, open tooling</h2>
+  <p class="lead">Every tool choice here is design-level and public — the pattern names them openly. Only the deployment data <em>behind</em> them (addresses, hosts, secrets) is private. Choices are pinned by digest or version and tracked against upstream releases within defined windows.</p>
+  <div class="zones">
+    <div class="zone"><b>Proxmox VE</b><i>virtualisation host, installed headlessly</i></div>
+    <div class="zone"><b>pfSense</b><i>firewall &amp; network policy engine</i></div>
+    <div class="zone"><b>Ansible</b><i>IaC engine + encrypted secrets (Vault)</i></div>
+    <div class="zone"><b>CIS Benchmarks</b><i>host hardening via ansible-lockdown</i></div>
+    <div class="zone"><b>GitHub Actions + GHCR</b><i>CI gates &amp; container registry, off-platform</i></div>
+    <div class="zone"><b>Trivy</b><i>image &amp; IaC vulnerability scanning</i></div>
+    <div class="zone"><b>Authentik</b><i>identity provider, phased single sign-on</i></div>
+    <div class="zone"><b>HashiCorp Vault</b><i>secrets management &amp; internal PKI</i></div>
+    <div class="zone"><b>Podman / Docker</b><i>container runtimes (Podman default)</i></div>
+    <div class="zone"><b>Wazuh + Suricata</b><i>SIEM and intrusion detection</i></div>
+  </div>
+  <p class="layer-note">Assurance frameworks: <strong>UK Secure by Design</strong>, <strong>CIS Benchmarks</strong>, <strong>OWASP Top 10</strong>, and <strong>MITRE ATT&amp;CK + ATLAS</strong> — mapped in the security case, not just cited.</p>
+</section>
+
+<section id="promises">
+  <p class="kicker">The promises</p>
+  <h2>Success is measured, not asserted</h2>
+  <p class="lead">A specification that can't be tested is a wish. These are the concrete signals the platform is judged against — the twelve-month measures drawn straight from the success criteria.</p>
+  <div class="metric">
+    <div class="m"><b>≤ 4h</b><span>bare metal to healthy, including critical-service data restore</span></div>
+    <div class="m"><b>≤ 1 day</b><span>a new service onboarded, request to productive</span></div>
+    <div class="m"><b>≤ 30 min</b><span>operator effort to onboard a service</span></div>
+    <div class="m"><b>0</b><span>leaks in the public pattern repo, by human review</span></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Promise</th><th>How it's proven</th></tr>
+    <tr><td>It rebuilds unattended</td><td>Scheduled reroll drills complete with no manual step beyond declared power actions</td></tr>
+    <tr><td>Hardening actually holds</td><td>The CIS post-audit gate blocks a merge when controls fail; drift is caught by scheduled live scans</td></tr>
+    <tr><td>The evidence is credible</td><td>The evidence pack passes review by an assessor <em>independent of the author</em></td></tr>
+    <tr><td>Deepest hardening, on target</td><td>The hypervisor host passes CIS Level 2 — or carries formal, signed-off waivers</td></tr>
+    <tr><td>The pattern is portable</td><td>Stood up at least once on non-reference hardware by inventory swap alone</td></tr>
+    <tr><td>Policy breaks are caught</td><td>An intentional policy break fails the automated checks as designed</td></tr>
+  </table></div>
+</section>
+
+<section id="shape">
+  <p class="kicker">The shape · how it works</p>
+  <h2>Six layers, strict rules between them</h2>
+  <p class="lead">The platform is built as layers, each depending only on the layers beneath it. Independent pieces stay compatible because the rules between layers are fixed up front — that is what the architecture defines.</p>
+  <div class="layers">
+    <div class="layer"><span class="tag">L0</span><span class="name">Power &amp; install</span><span class="what">turns machines on and installs them over the network, unattended</span></div>
+    <div class="layer"><span class="tag">L1</span><span class="name">Virtualisation</span><span class="what">the hosts running the virtual machines everything lives in</span></div>
+    <div class="layer"><span class="tag">L2</span><span class="name">Network policy</span><span class="what">the firewall and network zones — every rule generated from one policy file</span></div>
+    <div class="layer"><span class="tag">L3</span><span class="name">Hardening</span><span class="what">CIS security benchmark applied and continuously re-checked for drift</span></div>
+    <div class="layer"><span class="tag">L4</span><span class="name">Platform services</span><span class="what">identity &amp; MFA, secrets management, container management, monitoring</span></div>
+    <div class="layer"><span class="tag">L5</span><span class="name">Workloads</span><span class="what">the actual services, each onboarded through a readiness checklist</span></div>
+  </div>
+  <p class="layer-note">Two golden rules: <strong>a layer never depends on anything above it</strong> (so a rebuild can never deadlock), and <strong>logic is generic while specifics live in data files</strong> (so moving to different hardware means editing data, not rewriting code).</p>
+  <div class="note">One consequence worth naming: facts like the network layout exist in exactly <em>one</em> machine-readable file. Firewall rules, virtualisation checks, service placement, and even the diagrams in documents like this one are generated from it — so they cannot quietly disagree.</div>
+</section>
+
+<section id="rebuild">
+  <p class="kicker">Rebuild story · how it works</p>
+  <h2>From bare metal to healthy, unattended</h2>
+  <p class="lead">"Reroll" is the platform's disaster-recovery plan and its proof of quality: the same scripted sequence, drilled on a schedule. It assumes only powered machines and a basic build network — which is treated as untrusted.</p>
+  <div class="flow">
+    <div class="step"><b>1 · Install</b><span>machines boot from the network and install themselves, no keyboard involved</span></div>
+    <div class="step"><b>2 · Network up</b><span>the firewall and all network zones come up alongside the build network</span></div>
+    <div class="step gate"><b>3 · Verify</b><span>connectivity through the new network is proven before anything is switched over</span></div>
+    <div class="step"><b>4 · Cut over</b><span>hosts move onto the real network; the temporary build path is retired</span></div>
+    <div class="step gate"><b>5 · Burn keys</b><span>every credential used during the build is rotated — anything exposed early is now useless</span></div>
+    <div class="step"><b>6 · Harden</b><span>CIS benchmark applied and audited; failure blocks progress</span></div>
+    <div class="step"><b>7 · Services</b><span>identity, secrets, management and monitoring services come up</span></div>
+    <div class="step"><b>8 · Restore</b><span>workloads deploy and critical service data is restored from encrypted backup</span></div>
+  </div>
+  <p class="layer-note">Destructive steps are double-gated: an explicit confirmation flag <em>and</em> an environment lock that refuses to run against the wrong target. Amber steps are verification gates — the sequence stops rather than proceeds on failure.</p>
+</section>
+
+<section id="security">
+  <p class="kicker">Security · how it works</p>
+  <h2>Deny by default, prove continuously</h2>
+  <p class="lead">The network is divided into isolated zones. No zone may talk to another unless a written rule allows that specific flow — and those rules are generated from the single policy file, for the main firewall and the standby appliance alike.</p>
+  <div class="zones">
+    <div class="zone"><b>Management</b><i>admin access only, MFA enforced</i></div>
+    <div class="zone"><b>User &amp; developer</b><i>day-to-day work, no direct admin reach</i></div>
+    <div class="zone"><b>Services</b><i>platform and workload services</i></div>
+    <div class="zone"><b>AI workloads</b><i>accepts only approved API traffic in</i></div>
+    <div class="zone"><b>Lab / test</b><i>experiments, walled off from everything</i></div>
+    <div class="zone"><b>Untrusted &amp; guest</b><i>quarantined by default</i></div>
+  </div>
+  <p class="layer-note">Zone names above describe roles; the full zone model and per-flow rules live in the policy source. Deployment specifics (addresses, hosts) are intentionally not published.</p>
+  <div class="cards" style="margin-top:18px">
+    <div class="card"><h3>Hardened, and it stays hardened</h3><p>CIS benchmark compliance gates every merge, and live hosts are re-scanned on a schedule — drift raises an alert and lands in the evidence record.</p></div>
+    <div class="card"><h3>Identity first</h3><p>MFA is mandatory for privileged access. Access follows a lifecycle: recorded approval, quarterly review, and offboarding that provably removes every key — from one owned access file.</p></div>
+    <div class="card"><h3>Secrets never in the open</h3><p>All secrets are encrypted at rest in a private repository; automated leak checks and human review guard the public one. The public pattern never contains real addresses or credentials.</p></div>
+    <div class="card"><h3>Failover without going blind</h3><p>If the main firewall fails, a standby appliance holds the same deny-by-default policy. Entering failover raises an alert and restoring full inspection is tracked to completion.</p></div>
+  </div>
+</section>
+
+<section id="decisions">
+  <p class="kicker">Key decisions · how it works</p>
+  <h2>The calls the architecture locks in</h2>
+  <p class="lead">Fifteen binding decisions keep independently-built parts compatible. The load-bearing ones, in plain language:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Decision</th><th>What it means</th><th>Why it matters</th></tr>
+    <tr><td>Code is generic, data is specific</td><td>Logic never hard-codes deployment facts; one inventory file names the hardware</td><td>Portability: any lab adopts the pattern by swapping data</td></tr>
+    <tr><td>One network policy source</td><td>Every firewall rule, check and diagram is generated from a single file</td><td>Security rules can never quietly disagree</td></tr>
+    <tr><td>External control only</td><td>Apply-credentials live off-platform; changes push from an admin workstation</td><td>Compromising the platform doesn't grant the keys to it</td></tr>
+    <tr><td>Untrusted build network</td><td>Bring-up assumes a hostile network; everything it touched is rotated after</td><td>Rebuild works anywhere without weakening security</td></tr>
+    <tr><td>GitHub-only automation</td><td>No self-hosted CI service; checks run in GitHub with strict runner isolation</td><td>Less to maintain and attack; checks are publicly visible</td></tr>
+    <tr><td>Evidence lives off-platform</td><td>Every gate and scan writes to a private evidence store outside the platform</td><td>The record survives even a total rebuild; reviewers stay independent</td></tr>
+    <tr><td>One owner per fact</td><td>Access keys, network facts, deployed versions — each has exactly one authoritative file</td><td>Offboarding and audits are provable, not hopeful</td></tr>
+  </table></div>
+  <p class="layer-note">The three-repo split underpins this: a <strong>public pattern</strong> (no deployment specifics — this page's world), a <strong>private overlay</strong> (the real deployment data), and a <strong>private evidence store</strong> (gate and scan output, off-platform so it survives a reroll).</p>
+</section>
+
+<section id="honest">
+  <p class="kicker">Risks &amp; boundaries</p>
+  <h2>What we're honest about</h2>
+  <p class="lead">A plan that hides its risks isn't credible, and a scope with no edges grows without limit. Both are stated plainly and tracked, not wished away.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Item</th><th>Position</th></tr>
+    <tr><td>Young management tool <span class="pill warn">watched</span></td><td>The container-management service is a young project with a recent serious vulnerability. Mitigations: minimum safe version enforced, isolated management zone, fast security-update policy, and a named fallback product with a plain exit path.</td></tr>
+    <tr><td>Ageing standby firewall <span class="pill warn">watched</span></td><td>The failover appliance is older hardware. It only carries the continuity role, holds the same policy, and its replacement is an inventory swap by design.</td></tr>
+    <tr><td>Single administrator <span class="pill good">mitigated</span></td><td>Handover survivability is a tested requirement: documentation drills, a sealed recovery seed, and a disposable admin workstation mean a stranger can take over.</td></tr>
+    <tr><td>Deepest hardening level <span class="pill warn">deferred</span></td><td>CIS Level 1 is the enforced gate today; Level 2 on the hypervisor is a 12-month target pending validation on live hardware, with formal waivers where controls conflict.</td></tr>
+    <tr><td>Monitoring product choice <span class="pill good">deferred safely</span></td><td>The rules are fixed (central logs, 30-day/1-year retention, a deliberately short alert list, log archive survives rebuilds); the specific product is chosen at implementation.</td></tr>
+  </table></div>
+  <div class="note caution">Explicit non-goals keep the scope honest: no bulk service rollout yet, no offsite backup until capacity exists, no host full-disk encryption (it conflicts with unattended rebuild), no forensic archive through a reroll, and no lock to specific hardware models. Each is a chosen exclusion with a reason, not an oversight.</div>
+</section>
+
+</main>
+
+<footer>
+  <p>On-Prem Dev Platform — pattern-level briefing for technical and non-technical readers. Contains no live deployment details by design.</p>
+  <p>A project built with the <a href="index.html">Claude Secure Template</a>. Regenerated when the specification or architecture changes.</p>
+</footer>
+
+<script>
+  // Respect a stored theme toggle if the sibling pages set one; default follows the OS.
+  try{ var t = localStorage.getItem("theme"); if(t){ document.documentElement.setAttribute("data-theme", t); } }catch(e){}
+</script>
+
+</body>
+</html>

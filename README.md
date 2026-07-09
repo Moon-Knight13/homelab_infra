@@ -16,17 +16,14 @@ live in separate **private** repositories by design.
 
 ## 📊 Briefings
 
-Two self-contained, theme-aware pages (technical **and** non-technical readers). Served via
-GitHub Pages, or open the HTML locally — no external requests.
+Two self-contained, theme-aware pages (technical **and** non-technical readers). Rendered
+live via GitHub Pages — no external requests. The **Page** links below open the live site;
+the **Source** links open the raw HTML in the repo (or open it locally).
 
-| Page | What it covers |
-|------|----------------|
-| **[On-Prem Dev Platform — what &amp; how](docs/explainer/platform.html)** | The project: mission, who it serves, the 21 capabilities, the tech stack, measurable promises, the layered architecture, the rebuild story, and the security model. Start here. |
-| **[Engineering workflow overview](docs/explainer/index.html)** | The Claude-first delivery workflow this project is *built with* — AI task routing, security gates, and token compression. |
-
-_Once GitHub Pages is enabled (Settings → Pages → Source: "GitHub Actions"), these publish
-automatically at `https://moon-knight13.github.io/homelab_infra/platform.html` and
-`.../index.html`._
+| Page | What it covers | Source |
+|------|----------------|--------|
+| **[On-Prem Dev Platform — what &amp; how](https://moon-knight13.github.io/homelab_infra/platform.html)** | The project: mission, who it serves, the 21 capabilities, the tech stack, measurable promises, the layered architecture, the rebuild story, and the security model. Start here. | [`platform.html`](docs/explainer/platform.html) |
+| **[Engineering workflow overview](https://moon-knight13.github.io/homelab_infra/)** | The Claude-first delivery workflow this project is *built with* — AI task routing, security gates, and token compression. | [`index.html`](docs/explainer/index.html) |
 
 ## What the platform does
 
@@ -47,7 +44,7 @@ signal:
 - **Operate &amp; survive** — automated gates on every change, fast-rebuild backups, air-gap
   promotion bundles, queryable live state, and cold-handover documentation drills.
 
-See the [platform briefing](docs/explainer/platform.html) for the full picture, or the
+See the [platform briefing](https://moon-knight13.github.io/homelab_infra/platform.html) for the full picture, or the
 [architecture &amp; capability detail](#planning--architecture) below.
 
 ## Guarantees
@@ -78,7 +75,7 @@ the delivery discipline this platform is held to:
 - **Deny-by-default devcontainer** — the whole loop runs inside a container whose network is
   locked down by default.
 
-The engineering-workflow [visual overview](docs/explainer/index.html) covers this in one page.
+The engineering-workflow [visual overview](https://moon-knight13.github.io/homelab_infra/) covers this in one page.
 
 ## Planning &amp; architecture
 

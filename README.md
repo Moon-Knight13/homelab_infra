@@ -23,7 +23,7 @@ the **Source** links open the raw HTML in the repo (or open it locally).
 | Page | What it covers | Source |
 |------|----------------|--------|
 | **[On-Prem Dev Platform — what &amp; how](https://moon-knight13.github.io/homelab_infra/platform.html)** | The project: mission, who it serves, the 21 capabilities, the tech stack, measurable promises, the layered architecture, the rebuild story, and the security model. Start here. | [`platform.html`](docs/explainer/platform.html) |
-| **[Engineering workflow overview](https://moon-knight13.github.io/homelab_infra/)** | The Claude-first delivery workflow this project is *built with* — AI task routing, security gates, and token compression. | [`index.html`](docs/explainer/index.html) |
+| **[Engineering overview](https://moon-knight13.github.io/homelab_infra/)** | The technical build: architecture layers, the tech stack, the phased build plan, and the CI quality gates. For a technical audience. | [`index.html`](docs/explainer/index.html) |
 
 ## What the platform does
 
@@ -75,7 +75,7 @@ the delivery discipline this platform is held to:
 - **Deny-by-default devcontainer** — the whole loop runs inside a container whose network is
   locked down by default.
 
-The engineering-workflow [visual overview](https://moon-knight13.github.io/homelab_infra/) covers this in one page.
+The template's own [visual overview](https://moon-knight13.github.io/claude_template_repo/) covers that delivery workflow in one page. For this platform's own engineering — architecture, stack, and build plan — see the [engineering overview](https://moon-knight13.github.io/homelab_infra/).
 
 ## Planning &amp; architecture
 

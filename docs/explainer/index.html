@@ -102,6 +102,7 @@
   <ul>
     <li><a href="#architecture">Architecture</a></li>
     <li><a href="#stack">Tech stack</a></li>
+    <li><a href="#topology">Topology</a></li>
     <li><a href="#plan">Build plan</a></li>
     <li><a href="#gates">Quality gates</a></li>
     <li><a href="#invariants">Invariants</a></li>
@@ -146,6 +147,127 @@
     <tr><td>Wazuh · Suricata</td><td>L4</td><td>SIEM + IDS/IPS; uptime-first failover posture</td></tr>
   </table></div>
   <p class="layer-note">Assurance frameworks mapped in the security case: <strong>UK Secure by Design</strong> · <strong>CIS Benchmarks</strong> · <strong>OWASP Top 10</strong> · <strong>MITRE ATT&amp;CK + ATLAS</strong>.</p>
+</section>
+
+<section id="topology">
+  <p class="kicker">Topology</p>
+  <h2>Where the stack sits across the security zones</h2>
+  <p class="lead">A pattern-level view: a default-deny firewall in front of a segmented virtual network on the hypervisor, each zone isolated with explicit allow-lists only. Zones are shown by role — no addresses, VLAN numbers, or hostnames.</p>
+  <div style="overflow-x:auto;margin:18px 0">
+  <svg viewBox="0 0 880 660" role="img" aria-label="Network topology: off-platform CI and registry above a default-deny firewall, fronting a hypervisor with six isolated zones, plus an air-gapped promotion path" style="width:100%;min-width:660px;height:auto">
+    <style>
+      #topology svg text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+      #topology svg .t{fill:var(--ink);font-weight:700}
+      #topology svg .h{fill:var(--ink);font-weight:600}
+      #topology svg .s{fill:var(--muted)}
+      #topology svg .m{fill:var(--ink);font-family:var(--mono)}
+      #topology svg .box{fill:var(--card);stroke:var(--line)}
+      #topology svg .zn{fill:var(--zone);stroke:var(--line);stroke-dasharray:5 4}
+      #topology svg .fw{fill:var(--warn-soft);stroke:var(--warn)}
+      #topology svg .fwt{fill:var(--warn)}
+      #topology svg .peri{fill:none;stroke:var(--accent);stroke-dasharray:2 5}
+      #topology svg .acc{fill:var(--accent)}
+      #topology svg .good{fill:var(--good)}
+      #topology svg .ln{stroke:var(--line);stroke-dasharray:4 4}
+      #topology svg .al{stroke:var(--accent);stroke-dasharray:4 4}
+      #topology svg .wl{stroke:var(--warn);stroke-dasharray:2 3}
+    </style>
+    <defs>
+      <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" class="acc"/>
+      </marker>
+    </defs>
+
+    <!-- off-platform -->
+    <text x="440" y="20" text-anchor="middle" class="s" font-size="11" letter-spacing="1.5">OFF-PLATFORM · GitHub</text>
+    <rect x="250" y="30" width="170" height="44" rx="8" class="box"/>
+    <text x="335" y="52" text-anchor="middle" class="h" font-size="13">GitHub Actions</text>
+    <text x="335" y="67" text-anchor="middle" class="s" font-size="11">CI · required gates</text>
+    <rect x="460" y="30" width="170" height="44" rx="8" class="box"/>
+    <text x="545" y="52" text-anchor="middle" class="h" font-size="13">GHCR</text>
+    <text x="545" y="67" text-anchor="middle" class="s" font-size="11">image registry</text>
+
+    <!-- external links to firewall -->
+    <line x1="335" y1="74" x2="335" y2="112" class="ln" marker-end="url(#arw)"/>
+    <text x="330" y="94" text-anchor="end" class="s" font-size="10">reviewed change ·</text>
+    <text x="330" y="106" text-anchor="end" class="s" font-size="10">no keys inbound</text>
+    <line x1="545" y1="112" x2="545" y2="74" class="al" marker-end="url(#arw)"/>
+    <text x="552" y="94" class="s" font-size="10">outbound pull ·</text>
+    <text x="552" y="106" class="s" font-size="10">digests only</text>
+
+    <!-- firewall -->
+    <rect x="50" y="112" width="780" height="52" rx="8" class="fw"/>
+    <text x="66" y="136" class="fwt" font-size="13" font-weight="700">pfSense — default-deny firewall</text>
+    <text x="66" y="152" class="fwt" font-size="11">policy-as-code · deterministic rules · DNSSEC · NTP</text>
+    <line x1="648" y1="120" x2="648" y2="156" class="wl"/>
+    <text x="662" y="134" class="fwt" font-size="12" font-weight="600">standby FW</text>
+    <text x="662" y="150" class="fwt" font-size="10">policy parity · failover</text>
+
+    <!-- hypervisor / segmented network -->
+    <rect x="50" y="188" width="780" height="352" rx="12" class="peri"/>
+    <text x="66" y="210" class="acc" font-size="12" font-weight="600">Proxmox VE — segmented virtual network · default-deny between zones, explicit allow-lists only</text>
+
+    <!-- zone boxes: 3 cols x 2 rows -->
+    <!-- row 1 -->
+    <rect x="70" y="228" width="228" height="130" rx="8" class="zn"/>
+    <text x="84" y="250" class="t" font-size="13">Management</text>
+    <text x="84" y="268" class="s" font-size="11">admin only · MFA enforced</text>
+    <text x="84" y="292" class="m" font-size="11">Arcane manager</text>
+    <text x="84" y="308" class="m" font-size="11">admin workstation</text>
+    <text x="84" y="340" class="s" font-size="10">L4 · identity gate</text>
+
+    <rect x="326" y="228" width="228" height="130" rx="8" class="zn"/>
+    <text x="340" y="250" class="t" font-size="13">Platform services</text>
+    <text x="340" y="268" class="s" font-size="11">shared, controlled access</text>
+    <text x="340" y="292" class="m" font-size="11">Vault · Authentik</text>
+    <text x="340" y="308" class="m" font-size="11">Wazuh · Suricata (IDS)</text>
+    <text x="340" y="340" class="s" font-size="10">L4 · secrets · PKI · monitoring</text>
+
+    <rect x="582" y="228" width="228" height="130" rx="8" class="zn"/>
+    <text x="596" y="250" class="t" font-size="13">Workloads</text>
+    <text x="596" y="268" class="s" font-size="11">onboarded via manifests</text>
+    <text x="596" y="292" class="m" font-size="11">containers · GHCR digests</text>
+    <text x="596" y="308" class="m" font-size="11">Podman / Docker</text>
+    <text x="596" y="340" class="s" font-size="10">L5 · scanned, digest-pinned</text>
+
+    <!-- row 2 -->
+    <rect x="70" y="374" width="228" height="120" rx="8" class="zn"/>
+    <text x="84" y="396" class="t" font-size="13">AI</text>
+    <text x="84" y="414" class="s" font-size="11">approved API ingress only</text>
+    <text x="84" y="438" class="s" font-size="10">admin from Management zone only</text>
+
+    <rect x="326" y="374" width="228" height="120" rx="8" class="zn"/>
+    <text x="340" y="396" class="t" font-size="13">Lab / Test</text>
+    <text x="340" y="414" class="s" font-size="11">experiments, walled off</text>
+
+    <rect x="582" y="374" width="228" height="120" rx="8" class="zn"/>
+    <text x="596" y="396" class="t" font-size="13">Untrusted / Guest</text>
+    <text x="596" y="414" class="s" font-size="11">quarantined by default</text>
+
+    <!-- hardening band note -->
+    <text x="66" y="520" class="good" font-size="11" font-weight="600">L3 · CIS hardening applied to every host in the perimeter, re-scanned on a schedule for drift</text>
+
+    <!-- air gap / promotion -->
+    <rect x="70" y="574" width="228" height="52" rx="8" class="box"/>
+    <text x="84" y="596" class="h" font-size="13">Promotion bundle</text>
+    <text x="84" y="613" class="s" font-size="11">signed · self-contained</text>
+    <line x1="298" y1="600" x2="580" y2="600" class="al" marker-end="url(#arw)"/>
+    <text x="440" y="590" text-anchor="middle" class="s" font-size="10">air gap · one-way · pre-shared trust anchor</text>
+    <text x="440" y="617" text-anchor="middle" class="s" font-size="10">no back-channel · verified receiver-side</text>
+    <rect x="582" y="574" width="228" height="52" rx="8" class="box"/>
+    <text x="596" y="596" class="h" font-size="13">Edge / receiver</text>
+    <text x="596" y="613" class="s" font-size="11">holds only the trust anchor</text>
+  </svg>
+  </div>
+  <div class="zones">
+    <div class="zone"><b>Perimeter — L2 edge</b><i>default-deny firewall (policy-as-code) + standby with policy parity</i></div>
+    <div class="zone"><b>Segmentation — L2</b><i>isolated zones on the hypervisor; explicit allow-lists only</i></div>
+    <div class="zone"><b>Hardening — L3</b><i>CIS benchmark on every host, scheduled drift scans</i></div>
+    <div class="zone"><b>Identity, secrets, IDS — L4</b><i>MFA/SSO, Vault PKI, Wazuh/Suricata — in the services zone</i></div>
+    <div class="zone"><b>Egress model</b><i>outbound digest pull only; no inbound registry or CI keys to the platform</i></div>
+    <div class="zone"><b>Air gap</b><i>signed promotion bundle across a one-way boundary, verified with a pre-shared anchor</i></div>
+  </div>
+  <p class="layer-note">Diagram is pattern-level and self-contained — role-named zones, no live addresses, VLAN numbers, or hardware identifiers.</p>
 </section>
 
 <section id="plan">

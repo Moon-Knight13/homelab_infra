@@ -22,12 +22,12 @@ the **Source** links open the raw HTML in the repo (or open it locally).
 
 | Page | What it covers | Source |
 |------|----------------|--------|
-| **[On-Prem Dev Platform — what &amp; how](https://moon-knight13.github.io/homelab_infra/platform.html)** | The project: mission, who it serves, the 21 capabilities, the tech stack, measurable promises, the layered architecture, the rebuild story, and the security model. Start here. | [`platform.html`](docs/explainer/platform.html) |
+| **[On-Prem Dev Platform — what &amp; how](https://moon-knight13.github.io/homelab_infra/platform.html)** | The project: mission, who it serves, the 25 capabilities, the tech stack, measurable promises, the layered architecture, the rebuild story, and the security model. Start here. | [`platform.html`](docs/explainer/platform.html) |
 | **[Engineering overview](https://moon-knight13.github.io/homelab_infra/)** | The technical build: architecture layers, the tech stack, the phased build plan, and the CI quality gates. For a technical audience. | [`index.html`](docs/explainer/index.html) |
 
 ## What the platform does
 
-Twenty-one capabilities, grouped by the job they do — each with a concrete, testable success
+Twenty-five capabilities, grouped by the job they do — each with a concrete, testable success
 signal:
 
 - **Provision &amp; virtualise** — bare machines boot and install themselves over the network,
@@ -57,6 +57,22 @@ Measured, not asserted — the twelve-month success criteria:
 - **Zero leaks** in this public repository, by layered scanning and human review
 - Stood up at least once on **non-reference hardware** by inventory swap alone
 
+## Adopt this pattern
+
+Two sanctioned paths — pick by how you intend to run it:
+
+- **Overlay-nested (recommended, maintained).** Keep this pattern repository upstream and layer
+  a **private overlay** (inventory, host data, secrets) at a gitignored path over it. You keep
+  receiving upstream fixes and the public/private boundary stays clean. Best for long-lived
+  deployments and anyone contributing back.
+- **Template fork (one-off / air-gapped).** This repository is a **GitHub template** — use
+  **"Use this template"** to generate your own **private** copy and tweak it in place. Simpler for
+  a single lab, but you diverge from upstream, and the copy must stay private: the leak controls
+  still run, and the guarantee becomes *"this fork is never published."*
+
+Either way you retarget hardware by swapping inventory — no role edits. The template and this
+public pattern contain **pattern only**: no addresses, secrets, or deployment specifics.
+
 ## How it's engineered
 
 This project is built on the **[Claude Secure Template](https://github.com/Moon-Knight13/claude_template_repo)**
@@ -82,7 +98,7 @@ The template's own [visual overview](https://moon-knight13.github.io/claude_temp
 The platform is greenfield: the specification and architecture are complete and reviewed; the
 build is sequenced foundations-first (provisioning → network policy → hardening → services).
 
-Planning artifacts — the full specification (21 capabilities, constraints, non-goals), the
+Planning artifacts — the full specification (25 capabilities, constraints, non-goals), the
 architecture spine, and the decision log — are maintained in a **private planning repository**
 and are not reproduced here. The briefings above are the public, pattern-level reading of that
 work.

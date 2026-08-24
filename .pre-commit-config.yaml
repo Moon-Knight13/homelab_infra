@@ -25,19 +25,6 @@ repos:
         args: ["--config=.gitleaks.toml"]
         pass_filenames: false
 
-  - repo: local
-    hooks:
-      # Project deny-list scanner — catches internal topology and identity-linking
-      # data (IPs, VLANs, hardware SKUs, private repo slugs, identity handles, MACs)
-      # that gitleaks/semgrep miss because they are not secrets. Scans staged files
-      # here; CI (secret-scan.yml) scans the whole working tree.
-      - id: leak-scan
-        name: deny-list leak scan (public-repo hygiene)
-        entry: scripts/leak-scan.sh
-        language: script
-        pass_filenames: true
-        require_serial: true
-
   - repo: https://github.com/returntocorp/semgrep
     rev: v1.83.0
     hooks:
@@ -47,3 +34,16 @@ repos:
         # setuptools removed in v81. Pin a compatible setuptools so the hook's venv
         # works on Python 3.12+ hosts (CI uses the semgrep Docker image, unaffected).
         additional_dependencies: ["setuptools<81"]
+
+  - repo: local
+    hooks:
+      # Fail fast if CODEOWNERS is reset to the template placeholder in a derived
+      # repo. The weekly repository-audit already catches this, but only on its
+      # Monday schedule; this catches a manual edit at commit time. No-op on the
+      # template repo itself (placeholder is intentional there).
+      - id: codeowners-no-placeholder
+        name: CODEOWNERS has no template placeholder owner
+        entry: scripts/check-codeowners.sh
+        language: script
+        files: ^\.github/CODEOWNERS$
+        pass_filenames: false

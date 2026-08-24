@@ -17,3 +17,10 @@ README.md
 
 # May be relicensed per project
 LICENSE
+
+# Carries a repo-specific `deny-list` job (runs scripts/leak-scan.sh) that the
+# template's secret-scan.yml does not have. template-sync merges with -X theirs,
+# so without this line the first sync PR would propose deleting that job and
+# silently drop a security control. The script itself is downstream-only and
+# untouched by sync — it is the job that invokes it that needs protecting.
+.github/workflows/secret-scan.yml

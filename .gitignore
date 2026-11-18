@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+cloud-gpu/config.env
 secrets.*
 *.pem
 *.key

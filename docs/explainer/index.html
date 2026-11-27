@@ -3,445 +3,626 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Secure Template — what it is &amp; how it works</title>
+<title>On-Prem Dev Platform — Engineering Overview</title>
 <style>
   :root {
-    --ground: #EEF1F4;
-    --surface: #F8FAFB;
-    --ink: #14171C;
-    --ink-soft: #47515C;
-    --steel: #3B4A5A;
-    --steel-soft: #8695A3;
-    --line: #D3DAE0;
-    --accent: #E4572E;
-    --accent-ink: #B83E1B;
-    --gate: #2E7D5B;
-    --radius: 10px;
-    --maxw: 68ch;
-    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
-    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, "Cascadia Code", monospace;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --ink: #1a2333;
+    --muted: #5a6675;
+    --line: #dde3ea;
+    --accent: #0b5fff;
+    --accent-soft: #e8f0ff;
+    --accent-dim: #3d7cff;
+    --good: #0a7d4f;
+    --good-soft: #e3f5ec;
+    --warn: #9a6700;
+    --warn-soft: #fff3d6;
+    --zone: #f0f3f7;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #101318;
-      --surface: #171B22;
-      --ink: #E7ECF1;
-      --ink-soft: #9AA6B2;
-      --steel: #7C93A8;
-      --steel-soft: #5A6B7A;
-      --line: #262D36;
-      --accent: #FF6B3D;
-      --accent-ink: #FF8259;
-      --gate: #4FB08A;
+    :root:not([data-theme="light"]) {
+      --bg: #0f1420;
+      --card: #171e2e;
+      --ink: #e8edf5;
+      --muted: #9aa7b8;
+      --line: #2a3447;
+      --accent: #5b93ff;
+      --accent-soft: #1b2a4a;
+      --accent-dim: #4a7de8;
+      --good: #4cc38a;
+      --good-soft: #12301f;
+      --warn: #e2b93b;
+      --warn-soft: #33290e;
+      --zone: #1c2536;
+      color-scheme: dark;
     }
   }
-  :root[data-theme="light"] {
-    --ground: #EEF1F4; --surface: #F8FAFB; --ink: #14171C; --ink-soft: #47515C;
-    --steel: #3B4A5A; --steel-soft: #8695A3; --line: #D3DAE0;
-    --accent: #E4572E; --accent-ink: #B83E1B; --gate: #2E7D5B;
-  }
   :root[data-theme="dark"] {
-    --ground: #101318; --surface: #171B22; --ink: #E7ECF1; --ink-soft: #9AA6B2;
-    --steel: #7C93A8; --steel-soft: #5A6B7A; --line: #262D36;
-    --accent: #FF6B3D; --accent-ink: #FF8259; --gate: #4FB08A;
+    --bg: #0f1420;
+    --card: #171e2e;
+    --ink: #e8edf5;
+    --muted: #9aa7b8;
+    --line: #2a3447;
+    --accent: #5b93ff;
+    --accent-soft: #1b2a4a;
+    --accent-dim: #4a7de8;
+    --good: #4cc38a;
+    --good-soft: #12301f;
+    --warn: #e2b93b;
+    --warn-soft: #33290e;
+    --zone: #1c2536;
+    color-scheme: dark;
   }
 
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0 }
+  html { scroll-behavior: smooth }
   body {
-    margin: 0;
-    background: var(--ground);
+    background: var(--bg);
     color: var(--ink);
-    font-family: var(--serif);
-    font-size: 18px;
-    line-height: 1.62;
-    -webkit-font-smoothing: antialiased;
+    font: 16px/1.6 var(--sans);
   }
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
-  .mono { font-family: var(--mono); }
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.16em;
+  a { color: var(--accent); text-decoration: none }
+  a:hover { text-decoration: underline }
+
+  .ribbon {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    font-size: .85rem;
+  }
+  .ribbon .wrap {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    flex-wrap: wrap;
+  }
+  .ribbon .muted { color: var(--muted) }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--accent-soft), var(--bg));
+    border-bottom: 1px solid var(--line);
+    padding: 56px 20px 40px;
+  }
+  .hero .wrap { padding: 0 }
+  h1 { font-size: 2rem; line-height: 1.25; margin-bottom: .5rem }
+  .tagline { font-size: 1.15rem; color: var(--muted); max-width: 50em }
+
+  nav {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    z-index: 5;
+    overflow-x: auto;
+  }
+  nav ul {
+    display: flex;
+    gap: 4px;
+    list-style: none;
+    padding: 8px 20px;
+    max-width: 980px;
+    margin: 0 auto;
+    white-space: nowrap;
+  }
+  nav a {
+    display: block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+  nav a:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  section {
+    padding: 44px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  section:last-of-type { border-bottom: none }
+  h2 { font-size: 1.45rem; margin-bottom: 6px }
+  .kicker {
+    font-size: .8rem;
+    letter-spacing: .08em;
     text-transform: uppercase;
-    color: var(--steel);
-    margin: 0 0 14px;
+    color: var(--accent);
+    font-weight: 600;
   }
-  h1, h2, h3 { font-family: var(--sans); text-wrap: balance; line-height: 1.15; }
-  a { color: var(--accent-ink); text-underline-offset: 3px; text-decoration-thickness: 1px; }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  .lead { color: var(--muted); max-width: 52em; margin-bottom: 22px }
 
-  /* --- Hero --- */
-  header { padding: clamp(56px, 10vw, 104px) 0 40px; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em;
-    color: var(--ink-soft);
-    border: 1px solid var(--line); border-radius: 999px;
-    padding: 5px 13px; margin-bottom: 26px;
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
   }
-  .badge b { color: var(--gate); font-weight: 600; }
-  h1 {
-    margin: 0;
-    font-size: clamp(34px, 6.2vw, 58px);
-    font-weight: 680;
-    letter-spacing: -0.02em;
-  }
-  .lede {
-    margin: 22px 0 0;
-    font-size: clamp(19px, 2.6vw, 23px);
-    color: var(--ink-soft);
-    max-width: 60ch;
-  }
-  .lede .hl { color: var(--ink); border-bottom: 2px solid var(--accent); }
-
-  /* --- Switchboard diagram (the thesis) --- */
-  .board {
-    margin: 44px 0 8px;
-    background: var(--surface);
+  .card {
+    background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: clamp(22px, 4vw, 34px);
+    border-radius: 10px;
+    padding: 16px 18px;
   }
-  .board-cap { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel-soft); margin: 0 0 20px; }
-  .flow { display: grid; gap: 18px; }
-  .node {
-    border: 1px solid var(--line); border-radius: var(--radius);
-    background: var(--ground);
-    padding: 13px 16px;
-    font-family: var(--mono); font-size: 14px;
+  .card h3 { font-size: 1rem; margin-bottom: 6px }
+  .card p { font-size: .92rem; color: var(--muted) }
+
+  .layers {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+    margin: 20px 0;
   }
-  .node .k { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--steel-soft); margin-bottom: 3px; }
-  .node.in { border-color: var(--steel); border-left-width: 4px; }
-  .lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .lane { text-align: center; padding: 15px 12px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--ground); }
-  .lane .who { font-family: var(--sans); font-weight: 640; font-size: 15px; }
-  .lane .what { font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); line-height: 1.45; margin-top: 4px; display: block; }
-  .lane.human { border-top: 3px solid var(--steel); }
-  .lane.claude { border-top: 3px solid var(--accent); }
-  .lane.local { border-top: 3px solid var(--gate); }
-  .gate {
-    text-align: center; font-family: var(--mono); font-size: 13.5px;
-    border: 1px dashed var(--gate); color: var(--gate);
-    border-radius: var(--radius); padding: 12px;
+  .layer {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 16px;
   }
-  .node.out { border-color: var(--accent); border-left-width: 4px; }
-  .rail { text-align: center; color: var(--steel-soft); font-family: var(--mono); font-size: 18px; line-height: 1; }
-  @media (prefers-reduced-motion: no-preference) {
-    .flow > * { opacity: 0; transform: translateY(8px); animation: rise 0.5s ease forwards; }
-    .flow > *:nth-child(1){animation-delay:.05s} .flow > *:nth-child(2){animation-delay:.13s}
-    .flow > *:nth-child(3){animation-delay:.21s} .flow > *:nth-child(4){animation-delay:.29s}
-    .flow > *:nth-child(5){animation-delay:.37s} .flow > *:nth-child(6){animation-delay:.45s}
-    .flow > *:nth-child(7){animation-delay:.53s}
-    @keyframes rise { to { opacity: 1; transform: none; } }
+  .layer .tag {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--accent);
+    min-width: 2.4em;
+    font-weight: 700;
+  }
+  .layer .name { font-weight: 600; min-width: 11em }
+  .layer .what { color: var(--muted); font-size: .9rem }
+  .layer-note { font-size: .85rem; color: var(--muted) }
+
+  .zones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin: 18px 0;
+  }
+  .zone {
+    background: var(--zone);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: .88rem;
+  }
+  .zone b { display: block; font-size: .92rem; margin-bottom: 2px }
+  .zone i { color: var(--muted); font-style: normal }
+
+  .note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--good);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: .92rem;
+    margin: 18px 0;
+  }
+  .note.caution { border-left-color: var(--warn) }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: .92rem;
+  }
+  .tablewrap { overflow-x: auto; margin: 18px 0 }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    background: var(--zone);
+    font-size: .85rem;
+    letter-spacing: .03em;
+  }
+  tr:last-child td { border-bottom: none }
+  td:first-child { font-weight: 600; white-space: nowrap }
+
+  .pill {
+    display: inline-block;
+    border-radius: 99px;
+    padding: 2px 10px;
+    font-size: .78rem;
+    font-weight: 600;
+  }
+  .pill.good { background: var(--good-soft); color: var(--good) }
+  .pill.warn { background: var(--warn-soft); color: var(--warn) }
+  .pill.accent { background: var(--accent-soft); color: var(--accent) }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: stretch;
+    margin: 20px 0;
+  }
+  .step {
+    flex: 1 1 150px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .step b {
+    display: block;
+    font-size: .85rem;
+    color: var(--accent);
+    font-family: var(--mono);
+    margin-bottom: 4px;
+  }
+  .step span { font-size: .86rem; color: var(--muted) }
+  .step.gate { border-color: var(--warn); background: var(--warn-soft) }
+  .step.gate b { color: var(--warn) }
+
+  .metric {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+  }
+  .metric .m {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .metric .m b {
+    display: block;
+    font-size: 1.5rem;
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+  .metric .m span { font-size: .85rem; color: var(--muted) }
+
+  .repo-split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+  }
+  .repo-box {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--card);
+  }
+  .repo-box.public { border-top: 3px solid var(--good) }
+  .repo-box.private { border-top: 3px solid var(--warn) }
+  .repo-box.evidence { border-top: 3px solid var(--accent) }
+  .repo-box h3 { font-size: .95rem; margin-bottom: 4px }
+  .repo-box p { font-size: .85rem; color: var(--muted); margin: 0 }
+  .repo-box .vis {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .repo-box.public .vis { color: var(--good) }
+  .repo-box.private .vis { color: var(--warn) }
+  .repo-box.evidence .vis { color: var(--accent) }
+
+  .gates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 18px 0;
+  }
+  .gate-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 14px;
+    background: var(--card);
+    border-left: 3px solid var(--good);
+  }
+  .gate-card .gn {
+    font-family: var(--mono);
+    font-size: .9rem;
+    font-weight: 600;
+  }
+  .gate-card .gd {
+    font-size: .85rem;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .gate-card .gs {
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: 6px;
   }
 
-  /* --- Sections --- */
-  section { padding: 46px 0; border-top: 1px solid var(--line); }
-  section h2 { font-size: clamp(22px, 3.4vw, 29px); margin: 8px 0 4px; letter-spacing: -0.01em; }
-  .section-note { color: var(--ink-soft); margin: 0 0 26px; max-width: 58ch; }
-
-  /* what / why cards */
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
-  .card h3 { font-size: 16px; margin: 0 0 7px; }
-  .card p { margin: 0; font-size: 15.5px; color: var(--ink-soft); line-height: 1.5; }
-
-  /* components list */
-  .comp { display: grid; gap: 2px; }
-  .comp > div {
-    display: grid; grid-template-columns: minmax(0,10ch) 1fr; gap: 20px;
-    padding: 18px 0; border-bottom: 1px solid var(--line); align-items: baseline;
+  .net-zones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin: 18px 0;
   }
-  .comp > div:last-child { border-bottom: 0; }
-  .comp dt { font-family: var(--sans); font-weight: 640; font-size: 16px; }
-  .comp .tag { display: block; font-family: var(--mono); font-size: 11px; color: var(--steel-soft); margin-top: 5px; letter-spacing: 0.04em; }
-  .comp dd { margin: 0; font-size: 16px; color: var(--ink-soft); }
-  .comp dd b { color: var(--ink); font-weight: 600; }
-
-  /* lifecycle — genuine sequence, so numbered */
-  .life { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; counter-reset: step; }
-  .step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; position: relative; }
-  .step::before {
-    counter-increment: step; content: counter(step, decimal-leading-zero);
-    font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: 0.05em;
+  .nz {
+    background: var(--zone);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: .85rem;
+    text-align: center;
   }
-  .step h3 { font-size: 15px; margin: 6px 0 4px; }
-  .step p { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.45; }
+  .nz b { display: block; font-size: .88rem }
 
-  footer { padding: 40px 0 72px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 15px; }
-  footer .docs { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 16px 0 24px; font-family: var(--mono); font-size: 13.5px; }
-  footer .fine { font-size: 12.5px; color: var(--steel-soft); font-family: var(--mono); }
+  footer {
+    padding: 36px 20px 60px;
+    color: var(--muted);
+    font-size: .85rem;
+    text-align: center;
+  }
 
-  /* --- Under the hood: diagram cluster --- */
-  .dgram { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: clamp(18px, 3.4vw, 26px); margin-top: 20px; }
-  .dgram-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 16px; flex-wrap: wrap; }
-  .dgram-h h3 { font-size: 17px; margin: 0; font-family: var(--sans); }
-  .dgram-h .path { font-family: var(--mono); font-size: 11.5px; color: var(--steel-soft); letter-spacing: 0.03em; }
-  .dgram p.d-note { margin: 14px 0 0; font-size: 14.5px; color: var(--ink-soft); }
-  .chiprow { display: flex; flex-wrap: wrap; gap: 7px; }
-  .chip { font-family: var(--mono); font-size: 12px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink-soft); }
-
-  /* devcontainer anatomy */
-  .fw { border: 2px dashed var(--gate); border-radius: 10px; padding: 16px; position: relative; }
-  .fw > .fw-lbl { position: absolute; top: -10px; left: 14px; background: var(--surface); padding: 0 8px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--gate); }
-  .cbox { border: 1px solid var(--steel); border-radius: 8px; padding: 14px; }
-  .cbox .ct { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-bottom: 10px; }
-  .mounts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
-  .mounts .chip { border-style: dashed; border-color: var(--steel-soft); }
-  .egress { margin-top: 14px; display: grid; gap: 8px; }
-  .egress .allow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
-  .egress .allow .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gate); }
-  .egress .deny { font-family: var(--mono); font-size: 12px; color: var(--accent-ink); }
-  .egress .deny b { color: var(--accent); }
-  .host-ext { margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); border-top: 1px dotted var(--line); padding-top: 12px; }
-
-  /* two engines */
-  .engines { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .engine { border: 1px solid var(--line); border-radius: 8px; padding: 15px; }
-  .engine.cloud { border-top: 3px solid var(--accent); }
-  .engine.edge { border-top: 3px solid var(--gate); }
-  .engine .en-h { font-family: var(--sans); font-weight: 640; font-size: 15px; }
-  .engine .en-s { font-family: var(--mono); font-size: 11px; color: var(--steel-soft); text-transform: uppercase; letter-spacing: 0.06em; margin: 3px 0 11px; }
-  .engine ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-  .engine li { font-size: 14px; color: var(--ink-soft); padding-left: 16px; position: relative; line-height: 1.4; }
-  .engine li::before { content: "›"; position: absolute; left: 2px; color: var(--steel); }
-  .engine .en-f { margin-top: 11px; font-family: var(--mono); font-size: 11.5px; }
-  .engine.cloud .en-f { color: var(--accent-ink); }
-  .engine.edge .en-f { color: var(--gate); }
-
-  /* caveman */
-  .cv-bars { display: grid; gap: 8px; }
-  .cv-row { display: grid; grid-template-columns: 8ch 1fr; align-items: center; gap: 12px; }
-  .cv-row .cv-k { font-family: var(--mono); font-size: 11px; color: var(--steel-soft); }
-  .cv-bar { height: 22px; border-radius: 5px; }
-  .cv-bar.full { width: 100%; background: var(--steel-soft); }
-  .cv-bar.comp { width: 65%; background: var(--accent); }
-  .cv-save { font-family: var(--mono); font-size: 12.5px; color: var(--accent-ink); margin-top: 10px; }
-  .statusline { margin-top: 14px; display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12.5px; background: var(--ink); color: var(--ground); padding: 7px 13px; border-radius: 7px; }
-  .statusline .dot { color: var(--gate); }
-
-  /* CI pipe */
-  .pipe { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-  .check { border: 1px solid var(--line); border-radius: 8px; padding: 13px; border-left: 3px solid var(--gate); }
-  .check .cn { font-family: var(--mono); font-size: 13px; font-weight: 600; }
-  .check .cw { font-size: 13px; color: var(--ink-soft); margin-top: 4px; line-height: 1.4; }
-  .check .cs { font-family: var(--mono); font-size: 10.5px; color: var(--steel-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 7px; }
-
-  @media (max-width: 560px) {
-    body { font-size: 17px; }
-    .lanes { grid-template-columns: 1fr; }
-    .comp > div { grid-template-columns: 1fr; gap: 4px; }
-    .engines { grid-template-columns: 1fr; }
-    .cv-row { grid-template-columns: 6ch 1fr; }
+  @media (max-width: 640px) {
+    h1 { font-size: 1.5rem }
+    .layer .name { min-width: 8em }
+    td:first-child { white-space: normal }
   }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header>
-    <span class="badge">secure&nbsp;<b>by&nbsp;default</b>&nbsp;·&nbsp;human&nbsp;in&nbsp;the&nbsp;loop</span>
-    <p class="eyebrow">Claude Secure Template</p>
-    <h1>A guarded workshop where AI does the work and nothing ships unchecked.</h1>
-    <p class="lede">A production-ready starting point for building software with Claude.
-      Work comes in, gets <span class="hl">routed</span> to whoever should do it — a person, Claude,
-      or a cheaper local model — and every change passes the same security gates before it merges.</p>
-  </header>
+<div class="ribbon">
+  <div class="wrap">
+    <span><strong>Engineering Overview</strong> <span class="muted">· On-Prem Dev Platform</span></span>
+    <span><a href="platform.html">Platform briefing →</a></span>
+  </div>
+</div>
 
-  <div class="board" aria-label="How work flows through the template">
-    <p class="board-cap">The routing switchboard</p>
-    <div class="flow">
-      <div class="node in"><span class="k">Work arrives</span>An issue on the board — a bug, a feature, a chore.</div>
-      <div class="rail" aria-hidden="true">▼ routed by risk &amp; type ▼</div>
-      <div class="lanes">
-        <div class="lane human">
-          <div class="who">Human</div>
-          <span class="what">Judgment calls, approvals, anything sensitive.</span>
-        </div>
-        <div class="lane claude">
-          <div class="who">Claude</div>
-          <span class="what">Architecture, security, cross-cutting or unclear work.</span>
-        </div>
-        <div class="lane local">
-          <div class="who">Local model</div>
-          <span class="what">Formatting, docs, small low-risk edits — near-free.</span>
-        </div>
-      </div>
-      <div class="rail" aria-hidden="true">▼ one branch, one PR ▼</div>
-      <div class="gate">✓ security gates — secrets · SAST · container scan — must pass</div>
-      <div class="rail" aria-hidden="true">▼</div>
-      <div class="node out"><span class="k">Merged</span>Reviewed, scanned, and tracked back to the issue.</div>
+<header class="hero">
+  <div class="wrap">
+    <h1>Engineering Overview</h1>
+    <p class="tagline">How the platform is built: the layered architecture, the technology choices, the phased build sequence, and the quality gates that keep every change honest. This page is for the people who will read the code, run the playbooks, and extend the pattern.</p>
+  </div>
+</header>
+
+<nav aria-label="Sections">
+  <ul>
+    <li><a href="#arch">Architecture</a></li>
+    <li><a href="#stack">Tech stack</a></li>
+    <li><a href="#repos">Repo split</a></li>
+    <li><a href="#phases">Build phases</a></li>
+    <li><a href="#ci">CI gates</a></li>
+    <li><a href="#security">Security model</a></li>
+    <li><a href="#adopt">Adopt</a></li>
+    <li><a href="#targets">Targets</a></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+
+<section id="arch">
+  <p class="kicker">Architecture</p>
+  <h2>Six layers, strict dependency rules</h2>
+  <p class="lead">The platform is built as layers. Each depends only on the layers beneath it. Independent pieces stay compatible because the contracts between layers are fixed before build begins.</p>
+
+  <div class="layers">
+    <div class="layer"><span class="tag">L0</span><span class="name">Power &amp; install</span><span class="what">PXE boot and unattended OS install — no keyboard, no console</span></div>
+    <div class="layer"><span class="tag">L1</span><span class="name">Virtualisation</span><span class="what">Proxmox VE hypervisors running all workloads in virtual machines</span></div>
+    <div class="layer"><span class="tag">L2</span><span class="name">Network policy</span><span class="what">pfSense firewall with zone-based rules generated from one policy source</span></div>
+    <div class="layer"><span class="tag">L3</span><span class="name">Hardening</span><span class="what">CIS benchmark applied via Ansible, re-scanned on schedule for drift</span></div>
+    <div class="layer"><span class="tag">L4</span><span class="name">Platform services</span><span class="what">Identity (Authentik), secrets (Vault), PKI, monitoring, container management</span></div>
+    <div class="layer"><span class="tag">L5</span><span class="name">Workloads</span><span class="what">Application services, each onboarded through a readiness checklist</span></div>
+  </div>
+
+  <p class="layer-note">Two golden rules: <strong>a layer never depends on anything above it</strong> (so a rebuild can never deadlock), and <strong>logic is generic while specifics live in data files</strong> (so moving to different hardware means editing inventory, not rewriting roles).</p>
+
+  <div class="note">Network facts, host inventory, and zone definitions each exist in exactly one machine-readable file. Firewall rules, virtualisation checks, and service placement are generated from that source — they cannot quietly disagree.</div>
+</section>
+
+<section id="stack">
+  <p class="kicker">Tech stack</p>
+  <h2>Proven, open, pinned</h2>
+  <p class="lead">Every tool is a design-level choice, stated openly. Only the deployment data behind them is private. Dependencies are pinned by digest or version and tracked against upstream releases within defined windows.</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Layer</th><th>Tool</th><th>Role</th></tr>
+    <tr><td>L0–L1</td><td>Proxmox VE</td><td>Hypervisor — headless install via PXE, all workloads virtualised</td></tr>
+    <tr><td>L2</td><td>pfSense</td><td>Firewall and network policy engine — rules generated from code</td></tr>
+    <tr><td>L0–L5</td><td>Ansible + Vault</td><td>IaC engine — playbooks, roles, encrypted secrets (ansible-vault)</td></tr>
+    <tr><td>L3</td><td>CIS Benchmarks</td><td>Host hardening via ansible-lockdown, continuous compliance scanning</td></tr>
+    <tr><td>L4</td><td>Authentik</td><td>Identity provider — MFA, SSO (phased rollout), lifecycle management</td></tr>
+    <tr><td>L4</td><td>HashiCorp Vault</td><td>Secrets management, internal PKI and certificate authority</td></tr>
+    <tr><td>L4–L5</td><td>Podman / Docker</td><td>Container runtimes — images scanned and deployed by digest</td></tr>
+    <tr><td>L4</td><td>Wazuh + Suricata</td><td>SIEM and network intrusion detection — survives failover</td></tr>
+    <tr><td>CI</td><td>GitHub Actions + GHCR</td><td>Automation, container registry — off-platform, publicly auditable</td></tr>
+    <tr><td>CI</td><td>Trivy</td><td>Image and IaC vulnerability scanning in CI</td></tr>
+  </table></div>
+
+  <p class="layer-note">Assurance frameworks mapped (not just cited): <strong>UK Secure by Design</strong>, <strong>CIS Benchmarks</strong>, <strong>OWASP Top 10</strong>, and <strong>MITRE ATT&amp;CK + ATLAS</strong>.</p>
+</section>
+
+<section id="repos">
+  <p class="kicker">Repository architecture</p>
+  <h2>Three-repo split</h2>
+  <p class="lead">The pattern, the deployment data, and the evidence each live in a separate repository. This boundary is load-bearing: it enforces the public/private separation and ensures compliance evidence survives a full rebuild.</p>
+
+  <div class="repo-split">
+    <div class="repo-box public">
+      <h3>Public pattern</h3>
+      <p>Roles, playbooks, templates, documentation, CI workflows. Contains pattern only — no addresses, secrets, or deployment specifics.</p>
+      <span class="vis">public</span>
+    </div>
+    <div class="repo-box private">
+      <h3>Private overlay</h3>
+      <p>Host inventory, network data, encrypted secrets (ansible-vault). Layered at a gitignored path over the pattern repo.</p>
+      <span class="vis">private</span>
+    </div>
+    <div class="repo-box evidence">
+      <h3>Evidence store</h3>
+      <p>Gate output, scan results, compliance records. Stored off-platform so the record survives a full reroll.</p>
+      <span class="vis">private · off-platform</span>
     </div>
   </div>
 
-  <section>
-    <p class="eyebrow">For anyone</p>
-    <h2>Why it exists</h2>
-    <p class="section-note">Three ideas do most of the work. You don't need to read code to get them.</p>
-    <div class="cards">
-      <div class="card">
-        <h3>Safe by default</h3>
-        <p>The environment is locked down before the first line is written — egress is allowlisted, secrets never touch the repo, and the agent itself is fenced: it cannot read the credential store or quietly edit the files that define its own limits.</p>
-      </div>
-      <div class="card">
-        <h3>Cheap work goes local</h3>
-        <p>Low-risk tasks are handed to a free model running on your own machine. Claude is spent only where its judgment is worth the cost.</p>
-      </div>
-      <div class="card">
-        <h3>Humans stay in control</h3>
-        <p>Every task is a tracked card and every change is a reviewed pull request. Nothing merges until the automated checks agree.</p>
-      </div>
+  <div class="note">The public repo is monitored by layered leak controls: automated scanners, custom deny-list patterns, code-owner review on all paths, and periodic human review as the primary signal.</div>
+</section>
+
+<section id="phases">
+  <p class="kicker">Build sequence</p>
+  <h2>Foundations first, services last</h2>
+  <p class="lead">The build is strictly sequenced: each phase depends on the one before it. The same sequence is drilled as the disaster-recovery reroll — if it rebuilds unattended, the design is proven.</p>
+
+  <div class="flow">
+    <div class="step"><b>1 · Provision</b><span>Machines PXE boot and install themselves unattended</span></div>
+    <div class="step"><b>2 · Network</b><span>Firewall and zone policies come up alongside a temporary build network</span></div>
+    <div class="step gate"><b>3 · Verify</b><span>Connectivity through the new network is proven before cutover</span></div>
+    <div class="step"><b>4 · Cut over</b><span>Hosts move to production network; build path is retired</span></div>
+    <div class="step gate"><b>5 · Rotate</b><span>Every credential used during build is rotated — build-time secrets are now useless</span></div>
+    <div class="step"><b>6 · Harden</b><span>CIS benchmark applied and audited; failure blocks progress</span></div>
+    <div class="step"><b>7 · Services</b><span>Identity, secrets management, monitoring, and container platform come up</span></div>
+    <div class="step"><b>8 · Workloads</b><span>Application services deploy; critical data restored from encrypted backup</span></div>
+  </div>
+
+  <p class="layer-note">Amber steps are verification gates — the sequence stops on failure rather than proceeding. Destructive steps are double-gated: an explicit confirmation flag <em>and</em> an environment lock that refuses to run against the wrong target.</p>
+</section>
+
+<section id="ci">
+  <p class="kicker">Quality gates</p>
+  <h2>Every change is scanned before merge</h2>
+  <p class="lead">CI checks are required, not advisory. A red check blocks the pull request from merging. No human override, no fast lane.</p>
+
+  <div class="gates">
+    <div class="gate-card">
+      <div class="gn">pre-commit</div>
+      <div class="gd">Formatting, linting, and hygiene checks run locally before code leaves your machine.</div>
+      <div class="gs">local · on every commit</div>
     </div>
-  </section>
-
-  <section>
-    <p class="eyebrow">For engineers</p>
-    <h2>The six moving parts</h2>
-    <p class="section-note">Each is a self-contained piece of the template. Together they turn a blank repo into a governed, AI-assisted delivery pipeline.</p>
-    <dl class="comp">
-      <div>
-        <dt>Devcontainer<span class="tag">.devcontainer/</span></dt>
-        <dd>A reproducible dev environment with a <b>deny-by-default firewall</b> — egress is allowlisted, tooling is pre-installed, Claude auth is a mounted volume.</dd>
-      </div>
-      <div>
-        <dt>AI routing<span class="tag">scripts/route-model.sh</span></dt>
-        <dd>Classifies each task and sends it <b>local vs Claude</b> by risk. Hard triggers — auth, networking, broad refactors — always escalate to Claude.</dd>
-      </div>
-      <div>
-        <dt>BMAD workflow<span class="tag">/bmad</span></dt>
-        <dd>Structured planning in six stages, Discovery through <b>Security &amp; Release</b>, so features are scoped before they're built.</dd>
-      </div>
-      <div>
-        <dt>Kanban board<span class="tag">/next-issue · /run-epic</span></dt>
-        <dd>A per-repo GitHub Project. Agents <b>claim cards collision-free</b>; a Route field makes the human/Claude/local decision visible on every card.</dd>
-      </div>
-      <div>
-        <dt>CI security gates<span class="tag">.github/workflows/</span></dt>
-        <dd><b>gitleaks</b> secret scanning, <b>semgrep</b> SAST (incl. MITRE ATLAS AI/ML rules), and <b>Trivy</b> container scanning — all enforced, not advisory.</dd>
-      </div>
-      <div>
-        <dt>Agent guardrails<span class="tag">.claude/settings.json · .claude/hooks/</span></dt>
-        <dd>The gates above protect the <i>code</i>. These protect the <b>agent writing it</b> — which reads issue text, packages and web pages an attacker can reach. <b>Deny rules</b> over credentials (they hold in every permission mode), a <b>Bash sandbox</b>, a guard so a session can't rewrite its own rules, and a rail that labels issue and PR text as <b>data, not instructions</b>.</dd>
-      </div>
-    </dl>
-  </section>
-
-  <section>
-    <p class="eyebrow">Under the hood</p>
-    <h2>How the pieces actually work</h2>
-    <p class="section-note">Four close-ups: the sealed environment, the two engines behind the routing, the token compressor, and the gates every change runs.</p>
-
-    <div class="dgram">
-      <div class="dgram-h"><h3>The devcontainer</h3><span class="path">.devcontainer/</span></div>
-      <div class="fw">
-        <span class="fw-lbl">deny-by-default firewall</span>
-        <div class="cbox">
-          <div class="ct">container · node:24 (digest-pinned)</div>
-          <div class="chiprow">
-            <span class="chip">Claude CLI</span>
-            <span class="chip">VS Code extension</span>
-            <span class="chip">gitleaks</span>
-            <span class="chip">semgrep</span>
-            <span class="chip">pre-commit</span>
-            <span class="chip">python3 · node</span>
-          </div>
-          <div class="mounts">
-            <span class="chip">mount · ~/.claude auth</span>
-            <span class="chip">mount · gh auth</span>
-          </div>
-        </div>
-        <div class="egress">
-          <div class="allow">
-            <span class="k">egress allowed →</span>
-            <span class="chip">GitHub</span><span class="chip">npm</span><span class="chip">PyPI</span>
-            <span class="chip">api.anthropic.com</span><span class="chip">VS Marketplace</span>
-          </div>
-          <div class="deny">everything else → <b>REJECT</b></div>
-        </div>
-        <div class="host-ext">host machine · Ollama reachable only on :11434 →  local model, never leaves your box</div>
-      </div>
-      <p class="d-note">Auth lives in mounted volumes, never in the repo — and deny rules stop the agent reading them from there. The firewall opens the network to a short allowlist and blocks the rest, set once at container start. Worth knowing what that buys: the allowlist includes all of GitHub, so it bounds <i>where</i> data can go rather than <i>whether</i> it leaves. The container protects the host; it is not a containment boundary for data.</p>
+    <div class="gate-card">
+      <div class="gn">gitleaks</div>
+      <div class="gd">Scans for committed secrets, tokens, API keys, and private keys. Blocks the merge on any finding.</div>
+      <div class="gs">secret-scan.yml</div>
     </div>
-
-    <div class="dgram">
-      <div class="dgram-h"><h3>Two engines behind the routing</h3><span class="path">scripts/route-model.sh</span></div>
-      <div class="engines">
-        <div class="engine cloud">
-          <div class="en-h">Claude</div>
-          <div class="en-s">cloud · paid · escalate here</div>
-          <ul>
-            <li>Architecture &amp; cross-cutting design</li>
-            <li>Security, auth, secrets</li>
-            <li>Firewall / networking changes</li>
-            <li>Broad refactors, unclear debugging</li>
-          </ul>
-          <div class="en-f">judgment worth the tokens</div>
-        </div>
-        <div class="engine edge">
-          <div class="en-h">Local model · Ollama</div>
-          <div class="en-s">on-host · free · default for low risk</div>
-          <ul>
-            <li>Formatting &amp; boilerplate</li>
-            <li>Docs updates</li>
-            <li>Tiny single-purpose refactors</li>
-            <li>Simple renames &amp; tests</li>
-          </ul>
-          <div class="en-f">private · fast · near-zero cost</div>
-        </div>
-      </div>
-      <p class="d-note">A task is classified by type and risk; any hard trigger — auth, networking, 8+ files — always escalates to Claude. The same decision shows up as the <b>Route</b> field on the board card.</p>
+    <div class="gate-card">
+      <div class="gn">semgrep</div>
+      <div class="gd">Static analysis including MITRE ATLAS rules for AI/ML-specific risks. Custom rules for the project's deny patterns.</div>
+      <div class="gs">semgrep.yml</div>
     </div>
-
-    <div class="dgram">
-      <div class="dgram-h"><h3>Caveman — token compression</h3><span class="path">scripts/install-caveman.sh</span></div>
-      <div class="cv-bars">
-        <div class="cv-row"><span class="cv-k">raw</span><div class="cv-bar full"></div></div>
-        <div class="cv-row"><span class="cv-k">caveman</span><div class="cv-bar comp"></div></div>
-      </div>
-      <div class="cv-save">≈ one-third fewer output tokens — same technical content, less prose</div>
-      <div class="statusline"><span class="dot">●</span> caveman · session 12.4k tok · ~$0.08 saved</div>
-      <p class="d-note">Caveman trims Claude's wording down to the essentials, then a statusline reads the real per-session token counts from the transcript and prices them — so spend is visible while you work.</p>
+    <div class="gate-card">
+      <div class="gn">Trivy</div>
+      <div class="gd">Container image scanning for known CVEs. Runs against every image built in CI.</div>
+      <div class="gs">container-scan.yml</div>
     </div>
-
-    <div class="dgram">
-      <div class="dgram-h"><h3>The security gates</h3><span class="path">.github/workflows/</span></div>
-      <div class="pipe">
-        <div class="check"><div class="cn">pre-commit</div><div class="cw">Formatting &amp; hygiene, before the code ever leaves your machine.</div><div class="cs">local</div></div>
-        <div class="check"><div class="cn">gitleaks</div><div class="cw">Blocks committed secrets, tokens, and keys.</div><div class="cs">secret-scan.yml</div></div>
-        <div class="check"><div class="cn">semgrep</div><div class="cw">SAST, including MITRE ATLAS rules for AI/ML risks.</div><div class="cs">semgrep.yml</div></div>
-        <div class="check"><div class="cn">Trivy</div><div class="cw">Scans the container image for known CVEs.</div><div class="cs">container-scan.yml</div></div>
-        <div class="check"><div class="cn">weekly audit</div><div class="cw">Scheduled repo-wide security sweep.</div><div class="cs">repository-audit.yml</div></div>
-      </div>
-      <p class="d-note">Every gate is required, not advisory — a red check keeps the pull request from merging.</p>
+    <div class="gate-card">
+      <div class="gn">weekly audit</div>
+      <div class="gd">Scheduled full-repository security sweep. Catches drift that incremental scans miss.</div>
+      <div class="gs">repository-audit.yml</div>
     </div>
-  </section>
-
-  <section>
-    <p class="eyebrow">The loop</p>
-    <h2>From idea to merge</h2>
-    <p class="section-note">One story, one branch, one pull request. The order is the point — each step gates the next.</p>
-    <div class="life">
-      <div class="step"><h3>Issue</h3><p>Work is filed as a card on the board.</p></div>
-      <div class="step"><h3>Route</h3><p>Tagged Human, Claude, or Local by risk.</p></div>
-      <div class="step"><h3>Claim</h3><p>An agent picks it up — no collisions.</p></div>
-      <div class="step"><h3>Pull request</h3><p>Branch + PR that closes the issue.</p></div>
-      <div class="step"><h3>Gates</h3><p>Secrets, SAST, container scan must pass.</p></div>
-      <div class="step"><h3>Merge</h3><p>Reviewed, green, shipped.</p></div>
+    <div class="gate-card">
+      <div class="gn">branch protection</div>
+      <div class="gd">Required status checks, conventional commits, code-owner review on all paths. One branch, one PR per unit of work.</div>
+      <div class="gs">repo settings</div>
     </div>
-  </section>
+  </div>
 
-  <footer>
-    <p style="margin:0 0 4px;font-family:var(--sans);font-weight:640;color:var(--ink)">Where to go deeper</p>
-    <div class="docs">
-      <span>README.md</span>
-      <span>docs/TEMPLATE_GUIDE.md</span>
-      <span>docs/AI_ROUTING_POLICY.md</span>
-      <span>docs/BMAD_WORKFLOW.md</span>
-      <span>docs/KANBAN_WORKFLOW.md</span>
+  <div class="note">The gate output is written to the private evidence store, not just the CI log. Reviewers independent of the author can audit the record at any time.</div>
+</section>
+
+<section id="security">
+  <p class="kicker">Security model</p>
+  <h2>Deny by default, prove continuously</h2>
+  <p class="lead">The network is divided into isolated zones. No zone talks to another unless a written rule allows that specific flow. Rules are generated from a single policy source, applied to both the primary and standby appliance.</p>
+
+  <div class="net-zones">
+    <div class="nz"><b>Management</b>Admin only, MFA enforced</div>
+    <div class="nz"><b>User &amp; dev</b>Day-to-day, no admin reach</div>
+    <div class="nz"><b>Services</b>Platform and workloads</div>
+    <div class="nz"><b>AI workloads</b>Approved API traffic only</div>
+    <div class="nz"><b>Lab / test</b>Walled off from everything</div>
+    <div class="nz"><b>Untrusted</b>Quarantined by default</div>
+  </div>
+
+  <div class="cards" style="margin-top:14px">
+    <div class="card">
+      <h3>CIS hardening gates every merge</h3>
+      <p>Hosts are benchmarked on every change. Live hosts are re-scanned on schedule — drift raises an alert and writes to the evidence record.</p>
     </div>
-    <p class="fine">The repository README is the source of truth; this overview is a briefing companion. Apache-2.0.</p>
-  </footer>
-</div>
+    <div class="card">
+      <h3>Identity lifecycle</h3>
+      <p>MFA mandatory for privileged access. Recorded approval, quarterly review, offboarding that provably removes every key — from one authoritative access file.</p>
+    </div>
+    <div class="card">
+      <h3>Secrets encrypted at rest</h3>
+      <p>Ansible-vault for deployment secrets. HashiCorp Vault for runtime secrets and internal PKI. Automated leak checks guard the public repo.</p>
+    </div>
+    <div class="card">
+      <h3>External control plane</h3>
+      <p>Apply-credentials live off-platform. Changes push from an admin workstation. Compromising the platform does not grant the keys to it.</p>
+    </div>
+  </div>
+
+  <p class="layer-note" style="margin-top:16px">Zone names describe roles; the full model and per-flow rules live in the policy source. Deployment specifics are intentionally not published.</p>
+</section>
+
+<section id="adopt">
+  <p class="kicker">Adoption</p>
+  <h2>Two paths to stand this up</h2>
+  <p class="lead">The pattern is designed for reuse. Pick the path that fits how you intend to run it.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Overlay-nested <span class="pill good">recommended</span></h3>
+      <p>Keep the pattern upstream. Layer a private overlay (inventory, secrets) at a gitignored path. You receive upstream fixes and the public/private boundary stays clean. Best for long-lived deployments.</p>
+    </div>
+    <div class="card">
+      <h3>Template fork</h3>
+      <p>Use "Use this template" to generate a private copy and edit in place. Simpler for a single lab, but you diverge from upstream. The copy must stay private.</p>
+    </div>
+  </div>
+
+  <div class="note">Either way, retarget hardware by swapping inventory — no role edits. The pattern contains no addresses, secrets, or deployment specifics.</div>
+</section>
+
+<section id="targets">
+  <p class="kicker">Success criteria</p>
+  <h2>Measured, not asserted</h2>
+  <p class="lead">Twelve-month targets drawn from the specification. Each has a concrete test.</p>
+
+  <div class="metric">
+    <div class="m"><b>&le; 4h</b><span>Bare metal to healthy, including data restore</span></div>
+    <div class="m"><b>&le; 1 day</b><span>New service onboarded, request to productive</span></div>
+    <div class="m"><b>&le; 30 min</b><span>Operator effort per onboard</span></div>
+    <div class="m"><b>0</b><span>Leaks in the public repo</span></div>
+  </div>
+
+  <div class="tablewrap"><table>
+    <tr><th>Promise</th><th>How it is proven</th></tr>
+    <tr><td>Rebuilds unattended</td><td>Scheduled reroll drills complete with no manual step beyond declared power actions</td></tr>
+    <tr><td>Hardening holds</td><td>CIS post-audit gate blocks a merge on control failure; drift caught by scheduled live scans</td></tr>
+    <tr><td>Evidence is credible</td><td>Evidence pack passes review by an assessor independent of the author</td></tr>
+    <tr><td>Pattern is portable</td><td>Stood up at least once on non-reference hardware by inventory swap alone</td></tr>
+    <tr><td>Policy breaks are caught</td><td>An intentional policy break fails the automated checks as designed</td></tr>
+  </table></div>
+</section>
+
+</main>
+
+<footer>
+  <p>On-Prem Dev Platform — engineering overview for technical readers. Contains no deployment specifics by design.</p>
+  <p>See also the <a href="platform.html">platform briefing</a> for the full what-and-how aimed at technical and non-technical readers alike.</p>
+</footer>
+
+<script>
+  try { var t = localStorage.getItem("theme"); if (t) { document.documentElement.setAttribute("data-theme", t); } } catch (e) {}
+</script>
+
 </body>
 </html>
